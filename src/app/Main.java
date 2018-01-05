@@ -1,4 +1,10 @@
 package app;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -70,6 +76,9 @@ public class Main {
 	//sample values taken by sensors' sample provider
 	public static float[] sample1,sample2;
 	
+	//arbitrators for mapping and localization
+	public static Arbitrator mappingArbitrator, localizationArbitrator;
+	
 	
 	//localization behavior controls
 	public static boolean action2, weapon, giant, prince = false;
@@ -137,6 +146,11 @@ public class Main {
 		
 		
 		//button interface to run different task with buttons
+		if(Main.deserializeMap()) {
+			Main.graphicsLCD.drawString("Successful deserialization", Main.graphicsLCD.getWidth()/2, 0, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
+		}else {
+			Main.graphicsLCD.drawString("Unsuccessful deserialization", Main.graphicsLCD.getWidth()/2, 0, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
+		}
 		while(true) {
 			int button = 0;
 			button = Button.waitForAnyPress();
@@ -147,8 +161,10 @@ public class Main {
 				MoveTo moveTo = new MoveTo();
 				
 				Behavior[] behaviorList = {moveTo,nCheck};
-				Arbitrator arbitrator = new Arbitrator(behaviorList);
-				arbitrator.go();
+				mappingArbitrator = new Arbitrator(behaviorList);
+				mappingArbitrator.go();
+				
+				Main.serializeMap();
 			}
 			//localization task
 			else if(button == Button.ID_DOWN) {
@@ -158,8 +174,8 @@ public class Main {
 				SavePrince savePrince = new SavePrince();
 				
 				Behavior[] behaviorList = {savePrince,killGiant,takeWeapon,localize};
-				Arbitrator arbitrator = new Arbitrator(behaviorList);
-				arbitrator.go();
+				localizationArbitrator = new Arbitrator(behaviorList);
+				localizationArbitrator.go();
 			}
 			//idle task
 			else if(button == Button.ID_ENTER) {
@@ -281,11 +297,11 @@ public class Main {
 		return temp;
 	}
 	
-	//checks whether two float array are almost equal(every element in arrays differs at most by .15) or not
+	//checks whether two float array are almost equal(every element in arrays differs at most by .13) or not
 	public static boolean equals(float[] arr1, float[] arr2) {
 		
 		for(int i=0;i<4;i++) {
-			if(Math.abs(arr1[i]-arr2[i]) >= 0.15) {
+			if(Math.abs(arr1[i]-arr2[i]) >= 0.13) {
 				return false;
 			}
 		}
@@ -295,15 +311,17 @@ public class Main {
 	
 	
 	//try to locate current position of the robot by checking distance array and map cells' distance arrays
-	public static Cell locate() {
+	public static ArrayList<Cell> locate() {
 		
+		
+		ArrayList<Cell> list = new ArrayList<>();
 		int currentWallCount = 0;
 		float currentDist[] = new float[4];
 		currentDist[0] = Main.getDistance();
 		for(int i=1;i<4;i++) {
 			Main.sensorMotor.rotate(-90);
 			currentDist[i] = Main.getDistance();
-			if(currentDist[i] < 0.33) currentWallCount++;
+			if(currentDist[i] < 0.21) currentWallCount++;
 		}
 		Main.sensorMotor.rotate(270);
 		
@@ -320,30 +338,30 @@ public class Main {
 							Main.degree = 0;
 							Main.x = cell.getX();
 							Main.y = cell.getY();
-							return cell;
+							list.add(cell);
 						}
 						else if(Main.equals(currentDist, dist1)) {
 							Main.degree = 90;
 							Main.x = cell.getX();
 							Main.y = cell.getY();
-							return cell;
+							list.add(cell);
 						}
 						else if(Main.equals(currentDist, dist2)) {
 							Main.degree = 180;
 							Main.x = cell.getX();
 							Main.y = cell.getY();
-							return cell;
+							list.add(cell);
 						}
 						else if(Main.equals(currentDist, dist3)) {
 							Main.degree = 270;
 							Main.x = cell.getX();
 							Main.y = cell.getY();
-							return cell;
+							list.add(cell);
 						}
 					}
 				}
 				
-				return null;
+				return list;
 	}
 	
 	//move by one cell
@@ -404,6 +422,42 @@ public class Main {
 		
 		return false;
 	}
+	
+	public static void serializeMap() {
+		try {
+	         FileOutputStream fileOut = new FileOutputStream("map.ser");
+	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
+	         out.writeObject(Main.cells);
+	         out.close();
+	         fileOut.close();
+	         System.out.printf("Serialized data is saved in /tmp/employee.ser");
+	      } catch (IOException i) {
+	         i.printStackTrace();
+	      }
+	}
+	
+	public static boolean deserializeMap() {
+		try {
+			
+			File f = new File("map.ser");
+			if(f.exists()) {
+				FileInputStream fileIn = new FileInputStream("map.ser");
+		        ObjectInputStream in = new ObjectInputStream(fileIn);
+		        Main.cells = (ArrayList<Cell>) in.readObject();
+		        in.close();
+		        fileIn.close();
+		        
+		        return true;
+			}
+	         
+	      } catch (Exception e) {
+	         e.printStackTrace();
+	      } 
+		
+		return false;
+	}
+	
+	
 	
 
 }

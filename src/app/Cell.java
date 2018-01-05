@@ -1,6 +1,8 @@
 package app;
 
-public class Cell{
+import java.io.Serializable;
+
+public class Cell implements Serializable{
 
 int x,y;
 int count = 0;

@@ -36,12 +36,12 @@ public class KillGiant implements Behavior {
 		if(!Main.isPrinceLocated()) {
 			Main.isSafe = true;
 			Main.action = true;
-			NeighborCheck nCheck = new NeighborCheck();
-			MoveTo moveTo = new MoveTo();
+			//NeighborCheck nCheck = new NeighborCheck();
+			//MoveTo moveTo = new MoveTo();
 			
-			Behavior[] behaviorList = {moveTo,nCheck};
-			Arbitrator arbitrator = new Arbitrator(behaviorList);
-			arbitrator.go();
+			//Behavior[] behaviorList = {moveTo,nCheck};
+			//Arbitrator  = new Arbitrator(behaviorList);
+			Main.mappingArbitrator.go();
 		}
 		
 		

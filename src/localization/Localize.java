@@ -1,5 +1,7 @@
 package localization;
 
+import java.util.ArrayList;
+
 import app.Cell;
 import app.Main;
 import lejos.robotics.subsumption.Behavior;
@@ -18,25 +20,61 @@ public class Localize implements Behavior {
 		
 		
 		Cell cell = null;
-		
-		while(cell != null) {
-			cell = Main.locate();
-			if(cell != null) {
-				if(cell.getUp() != null) {
-					Main.moveToCell(cell.getUp());
-				}
-				else if(cell.getLeft() != null) {
-					Main.moveToCell(cell.getLeft());
-				}
-				else if(cell.getBottom() != null) {
-					Main.moveToCell(cell.getBottom());
-				}
-				else if(cell.getRight() != null) {
-					Main.moveToCell(cell.getRight());
+		ArrayList<Cell> candidateList = null;
+		boolean flag = false;
+		while(!flag) {
+			candidateList = Main.locate();
+			if(candidateList != null) {
+				for(int i=0;i<candidateList.size();i++) {
+					if(candidateList.get(i).getUp() != null) {
+						Main.moveToCell(candidateList.get(i).getUp());
+						
+						ArrayList<Cell> neighborList = Main.locate();
+						for(Cell c: neighborList) {
+							if(c.getBottom() == candidateList.get(i)) {
+								flag = true;
+							}
+						}
+					}
+					else if(candidateList.get(i).getLeft() != null) {
+						Main.moveToCell(candidateList.get(i).getLeft());
+						
+
+						ArrayList<Cell> neighborList = Main.locate();
+						for(Cell c: neighborList) {
+							if(c.getRight() == candidateList.get(i)) {
+								flag = true;
+							}
+						}
+					}
+					else if(candidateList.get(i).getBottom() != null) {
+						Main.moveToCell(candidateList.get(i).getBottom());
+						
+
+						ArrayList<Cell> neighborList = Main.locate();
+						for(Cell c: neighborList) {
+							if(c.getUp() == candidateList.get(i)) {
+								flag = true;
+							}
+						}
+					}
+					else if(candidateList.get(i).getRight() != null) {
+						Main.moveToCell(candidateList.get(i).getRight());
+						
+
+						ArrayList<Cell> neighborList = Main.locate();
+						for(Cell c: neighborList) {
+							if(c.getLeft() == candidateList.get(i)) {
+								flag = true;
+							}
+						}
+					}
+					
+				
 				}
 				
-				//eger yeni distancelar yeni sectigimiz cellinkine esit cikarsa kendimizi locate etmis oluruz
-				cell = Main.locate();
+		
+				
 			}
 		
 		}

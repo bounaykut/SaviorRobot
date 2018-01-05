@@ -31,6 +31,8 @@ public class SavePrince implements Behavior {
 		Sound.beep();
 		Sound.beep();
 		
+		Main.localizationArbitrator.stop();
+		
 		Main.prince = false;
 		
 	}

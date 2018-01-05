@@ -49,7 +49,7 @@ public class NeighborCheck implements Behavior {
 			
 			
 			if(Main.degree == 0) {
-				if(Main.getDistance() > 0.33) {
+				if(Main.getDistance() > 0.21) {
 					
 					Cell upCell = Main.getCell(Main.x,Main.y+1);
 					if(upCell == null) {
@@ -65,7 +65,7 @@ public class NeighborCheck implements Behavior {
 				Main.sensorMotor.rotate(-90);
 					
 					
-				if(Main.getDistance() > 0.33) {
+				if(Main.getDistance() > 0.21) {
 					
 				
 					Cell leftCell = Main.getCell(Main.x-1, Main.y);
@@ -83,7 +83,7 @@ public class NeighborCheck implements Behavior {
 				Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 						Cell bottomCell = Main.getCell(Main.x, Main.y-1);
@@ -101,7 +101,7 @@ public class NeighborCheck implements Behavior {
 					Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 						Cell rightCell = Main.getCell(Main.x+1, Main.y);
@@ -126,7 +126,7 @@ public class NeighborCheck implements Behavior {
 			}
 			else if(Main.degree == 90) {
 				
-				if(Main.getDistance() > 0.33) {
+				if(Main.getDistance() > 0.21) {
 					
 				
 					Cell leftCell = Main.getCell(Main.x-1, Main.y);
@@ -145,7 +145,7 @@ public class NeighborCheck implements Behavior {
 					
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 						Cell bottomCell = Main.getCell(Main.x, Main.y-1);
@@ -163,7 +163,7 @@ public class NeighborCheck implements Behavior {
 					Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 						Cell rightCell = Main.getCell(Main.x+1, Main.y);
@@ -182,7 +182,7 @@ public class NeighborCheck implements Behavior {
 					Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 					
 						Cell upCell = Main.getCell(Main.x,Main.y+1);
 						if(upCell == null) {
@@ -206,7 +206,7 @@ public class NeighborCheck implements Behavior {
 			else if(Main.degree == 180) {
 				
 			
-				if(Main.getDistance() > 0.33) {
+				if(Main.getDistance() > 0.21) {
 					
 				
 					Cell bottomCell = Main.getCell(Main.x, Main.y-1);
@@ -224,7 +224,7 @@ public class NeighborCheck implements Behavior {
 				Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 					
 						Cell rightCell = Main.getCell(Main.x+1, Main.y);
 						if(rightCell == null) {
@@ -242,7 +242,7 @@ public class NeighborCheck implements Behavior {
 					Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 						Cell upCell = Main.getCell(Main.x,Main.y+1);
@@ -260,7 +260,7 @@ public class NeighborCheck implements Behavior {
 					Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 						Cell leftCell = Main.getCell(Main.x-1, Main.y);
@@ -285,7 +285,7 @@ public class NeighborCheck implements Behavior {
 			}
 			else if(Main.degree == 270) {
 				
-				if(Main.getDistance() > 0.33) {
+				if(Main.getDistance() > 0.21) {
 					
 				
 					Cell rightCell = Main.getCell(Main.x+1, Main.y);
@@ -304,7 +304,7 @@ public class NeighborCheck implements Behavior {
 				Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 						Cell upCell = Main.getCell(Main.x,Main.y+1);
@@ -322,7 +322,7 @@ public class NeighborCheck implements Behavior {
 					Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 					
 
@@ -341,7 +341,7 @@ public class NeighborCheck implements Behavior {
 					Main.sensorMotor.rotate(-90);
 					
 					
-					if(Main.getDistance() > 0.33) {
+					if(Main.getDistance() > 0.21) {
 						
 				
 						Cell bottomCell = Main.getCell(Main.x, Main.y-1);
@@ -399,25 +399,25 @@ public class NeighborCheck implements Behavior {
 		bf.write(currentCell.getY()+"");
 		bf.newLine();
 		
-		if(currentCell.getDistance()[0] <= .33) {
+		if(currentCell.getUp() == null) {
 			bf.write(1+"");
 		}else {
 			bf.write(0+"");
 		}	
 		bf.newLine();
-		if(currentCell.getDistance()[1] <= .33) {
+		if(currentCell.getLeft() == null) {
 			bf.write(1+"");
 		}else {
 			bf.write(0+"");
 		}
 		bf.newLine();
-		if(currentCell.getDistance()[2] <= .33) {
+		if(currentCell.getBottom() == null) {
 			bf.write(1+"");
 		}else {
 			bf.write(0+"");
 		}
 		bf.newLine();
-		if(currentCell.getDistance()[3] <= .33) {
+		if(currentCell.getRight() == null) {
 			bf.write(1+"");
 		}else {
 			bf.write(0+"");
@@ -428,6 +428,7 @@ public class NeighborCheck implements Behavior {
 		
 			if(Main.mapDone) {
 				Main.robot.stop();
+				Main.mappingArbitrator.stop();
 				try {
 					dataOutputStream.close();
 					Main.socket.close();
