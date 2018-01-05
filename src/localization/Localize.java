@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import app.Cell;
 import app.Main;
+import lejos.hardware.lcd.GraphicsLCD;
 import lejos.robotics.subsumption.Behavior;
 
 public class Localize implements Behavior {
@@ -26,8 +27,14 @@ public class Localize implements Behavior {
 			candidateList = Main.locate();
 			if(candidateList != null) {
 				for(int i=0;i<candidateList.size();i++) {
+					
+					Main.x = candidateList.get(i).getX();
+					Main.y = candidateList.get(i).getY();
+					Main.degree = Main.degreeList.get(i);
+					
 					if(candidateList.get(i).getUp() != null) {
 						Main.moveToCell(candidateList.get(i).getUp());
+						
 						
 						ArrayList<Cell> neighborList = Main.locate();
 						for(Cell c: neighborList) {
@@ -73,12 +80,13 @@ public class Localize implements Behavior {
 				
 				}
 				
-		
 				
 			}
 		
 		}
 		
+		Main.graphicsLCD.drawString(Main.x +"x "+ Main.y +"y "+Main.degree +"degree ", Main.graphicsLCD.getWidth()/2, 0, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
+		Main.localizationArbitrator.stop();
 		//we are located now
 		
 		Main.action2 = true;

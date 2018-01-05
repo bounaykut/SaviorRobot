@@ -19,7 +19,7 @@ public class SavePrince implements Behavior {
 		//move to cell in which there is prince
 		Cell princeCell = null;
 		for(Cell c: Main.cells) {
-			if(c.getColor() == Main.Color.RED) {
+			if(c.getColor() == Main.Color.GREEN) {
 				princeCell = c;
 				break;
 			}

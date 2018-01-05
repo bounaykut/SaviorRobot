@@ -310,9 +310,11 @@ public class Main {
 	}
 	
 	
+	public static ArrayList<Integer> degreeList = new ArrayList<>();
 	//try to locate current position of the robot by checking distance array and map cells' distance arrays
 	public static ArrayList<Cell> locate() {
 		
+		degreeList.clear();
 		
 		ArrayList<Cell> list = new ArrayList<>();
 		int currentWallCount = 0;
@@ -335,27 +337,19 @@ public class Main {
 						float dist3[] = Main.shift(dist2, 1);
 						
 						if(Main.equals(currentDist, dist0)) {
-							Main.degree = 0;
-							Main.x = cell.getX();
-							Main.y = cell.getY();
+							degreeList.add(0);
 							list.add(cell);
 						}
 						else if(Main.equals(currentDist, dist1)) {
-							Main.degree = 90;
-							Main.x = cell.getX();
-							Main.y = cell.getY();
+							degreeList.add(90);
 							list.add(cell);
 						}
 						else if(Main.equals(currentDist, dist2)) {
-							Main.degree = 180;
-							Main.x = cell.getX();
-							Main.y = cell.getY();
+							degreeList.add(180);
 							list.add(cell);
 						}
 						else if(Main.equals(currentDist, dist3)) {
-							Main.degree = 270;
-							Main.x = cell.getX();
-							Main.y = cell.getY();
+							degreeList.add(270);
 							list.add(cell);
 						}
 					}
