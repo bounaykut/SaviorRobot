@@ -19,8 +19,6 @@ public class Localize implements Behavior {
 	public void action() {
 		// TODO Auto-generated method stub
 		
-		
-		Cell cell = null;
 		ArrayList<Cell> candidateList = null;
 		boolean flag = false;
 		while(!flag) {
@@ -85,8 +83,10 @@ public class Localize implements Behavior {
 		
 		}
 		
+		//*****************************debug first part***********************\\
 		Main.graphicsLCD.drawString(Main.x +"x "+ Main.y +"y "+Main.degree +"degree ", Main.graphicsLCD.getWidth()/2, 0, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
 		Main.localizationArbitrator.stop();
+		//*****************************debug first part***********************\\
 		//we are located now
 		
 		Main.action2 = true;

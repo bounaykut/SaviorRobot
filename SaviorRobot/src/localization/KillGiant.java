@@ -1,12 +1,8 @@
 package localization;
 import app.Cell;
-
 import app.Main;
 import lejos.hardware.Sound;
-import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
-import mapping.MoveTo;
-import mapping.NeighborCheck;
 
 public class KillGiant implements Behavior {
 

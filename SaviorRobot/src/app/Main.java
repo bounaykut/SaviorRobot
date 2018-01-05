@@ -424,7 +424,6 @@ public class Main {
 	         out.writeObject(Main.cells);
 	         out.close();
 	         fileOut.close();
-	         System.out.printf("Serialized data is saved in /tmp/employee.ser");
 	      } catch (IOException i) {
 	         i.printStackTrace();
 	      }
