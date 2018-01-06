@@ -62,16 +62,30 @@ public class MoveTo implements Behavior {
 				Delay.msDelay(2000);
 			}
 			
+			
+			ArrayList<Cell> choices = new ArrayList<>();
 			int minCount = 1000000;
 			int coordinate[] = {0,0};
 			for(Cell cell:nList) {
-				if(cell.getCount() < minCount) {
+				if(cell.getCount() <= minCount) {
 					minCount = cell.getCount();
 					coordinate[0] = cell.getX();
 					coordinate[1] = cell.getY();
+					choices.add(cell);
+					
 					Main.graphicsLCD.clear();
 					Main.graphicsLCD.drawString("mins " + coordinate[0] +  " and " + coordinate[1], Main.graphicsLCD.getWidth()/2, Main.graphicsLCD.getHeight()/2, GraphicsLCD.HCENTER|GraphicsLCD.VCENTER);
 					Delay.msDelay(2000);
+				}
+			}
+			
+			//to prevent go back previous position unnecessarily
+			if(choices.size() > 1) {
+				for(Cell cell:choices) {
+					if(cell != Main.previousCell) {
+						coordinate[0] = cell.getX();
+						coordinate[1] = cell.getY();
+					}
 				}
 			}
 			

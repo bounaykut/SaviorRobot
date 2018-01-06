@@ -1,5 +1,6 @@
 package app;
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.ListIterator;
+import java.util.Stack;
 
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
@@ -328,38 +331,39 @@ public class Main {
 		Main.sensorMotor.rotate(270);
 		
 		//locate yourself(find a unique cell to locate your coordinate) 
-				for(Cell cell:Main.cells) {
-					int cellWallCount = cell.getWallCount();
-					if(cellWallCount == currentWallCount ) {
-						float dist0[] = cell.getDistance();
-						float dist1[] = Main.shift(dist0, 1);
-						float dist2[] = Main.shift(dist1, 1);
-						float dist3[] = Main.shift(dist2, 1);
-						
-						if(Main.equals(currentDist, dist0)) {
-							degreeList.add(0);
-							list.add(cell);
-						}
-						else if(Main.equals(currentDist, dist1)) {
-							degreeList.add(90);
-							list.add(cell);
-						}
-						else if(Main.equals(currentDist, dist2)) {
-							degreeList.add(180);
-							list.add(cell);
-						}
-						else if(Main.equals(currentDist, dist3)) {
-							degreeList.add(270);
-							list.add(cell);
-						}
-					}
+		for(Cell cell:Main.cells) {
+			int cellWallCount = cell.getWallCount();
+			if(cellWallCount == currentWallCount ) {
+				float dist0[] = cell.getDistance();
+				float dist1[] = Main.shift(dist0, 1);
+				float dist2[] = Main.shift(dist1, 1);
+				float dist3[] = Main.shift(dist2, 1);
+
+				if(Main.equals(currentDist, dist0)) {
+					degreeList.add(0);
+					list.add(cell);
 				}
-				
-				return list;
+				else if(Main.equals(currentDist, dist1)) {
+					degreeList.add(90);
+					list.add(cell);
+				}
+				else if(Main.equals(currentDist, dist2)) {
+					degreeList.add(180);
+					list.add(cell);
+				}
+				else if(Main.equals(currentDist, dist3)) {
+					degreeList.add(270);
+					list.add(cell);
+				}
+			}
+		}
+
+		return list;
 	}
 	
 	//move by one cell
 	public static void moveToCell(Cell cell) {
+
 		
 		if(Main.x != cell.getX()) {
 			
@@ -399,9 +403,69 @@ public class Main {
 	}
 	
 	//move to specified cell through the shortest path
-	public static void moveShortest(Cell cell) {
+	public static void moveShortest(Cell goal) {
+		
+		ArrayList<Cell> openList = new ArrayList<>();
+		ArrayList<Cell> closeList = new ArrayList<>();
 		
 		Cell currentCell = Main.getCell(Main.x, Main.y);
+		
+		openList.add(currentCell);
+		
+		while(!openList.isEmpty()) {
+			
+			Cell q = null;
+			
+			//step a=> find the node with the least f on the open list, call it "q"
+			int min = 100000;
+			for(Cell c:openList) {
+				if(c.g+c.h < min) {
+					q = c;
+				}
+			}
+			
+			//step b=> pop q off the open list
+			openList.remove(q);
+			
+			//step c=> generate q's 4(at most) successors and set their parents to q
+			Cell s1 = q.getUp();
+			if(s1 != null) {
+				s1.parent = q;
+				//step d.i=>
+				s1.g = q.g + 1;
+				s1.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+				if(s1 == goal) {
+					break;
+				}
+				if(openList.contains(s1)) {
+					for(Cell c:openList) {
+						if(c == s1) return;
+					}
+				}
+			}
+			Cell s2 = q.getLeft();
+			if(s2 != null) {
+				s2.parent = q;
+			}
+			Cell s3 = q.getBottom();
+			if(s3 != null) {
+				s3.parent = q;
+			}
+			Cell s4 = q.getRight();
+			if(s4 != null) {
+				s4.parent = q;
+			}
+			
+			//step e=> push q on the closed list
+			closeList.add(q);
+			
+			
+			
+		}
+		
+		
+		//TODO once we find the shortest path we can use moveToCell(Cell cell) function along the path
+		
 		
 		
 	}

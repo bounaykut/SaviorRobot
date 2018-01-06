@@ -12,6 +12,9 @@ Main.Color color = Main.Color.WHITE;
 float[] distance = {0,0,0,0}; //{up,left,down,right}
 int wallCount = 0;
 
+Cell parent;
+int g,h = 0;
+
 Cell left;
 Cell right;
 Cell up;
