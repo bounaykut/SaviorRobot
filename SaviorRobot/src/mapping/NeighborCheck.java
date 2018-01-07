@@ -386,10 +386,6 @@ public class NeighborCheck implements Behavior {
 	
 		OutputStream outputStream = Main.client.getOutputStream();
 		DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-		
-		
-		
-		
 		BufferedWriter bf = new BufferedWriter(new OutputStreamWriter(dataOutputStream));
 		
 			
@@ -426,20 +422,20 @@ public class NeighborCheck implements Behavior {
 		bf.flush();
 			
 		
-			if(Main.mapDone) {
-				Main.robot.stop();
-				Main.mappingArbitrator.stop();
-				try {
-					dataOutputStream.close();
-					Main.socket.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Sound.beep();
-				Sound.beep();
-				Sound.beep();
-			}
+		if(Main.mapDone) {
+			Main.robot.stop();
+			Main.mappingArbitrator.stop();
+			/*try {
+				dataOutputStream.close();
+				Main.socket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+			Sound.beep();
+			Sound.beep();
+			Sound.beep();
+		}
 		
 		
 		
