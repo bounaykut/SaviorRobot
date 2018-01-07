@@ -405,10 +405,12 @@ public class Main {
 	//move to specified cell through the shortest path
 	public static void moveShortest(Cell goal) {
 		
+		Cell destination = null;
+		
 		ArrayList<Cell> openList = new ArrayList<>();
 		ArrayList<Cell> closeList = new ArrayList<>();
 		
-		Cell currentCell = Main.getCell(Main.x, Main.y);
+		Cell currentCell = Main.getCell(Main.x, Main.y).clone();
 		
 		openList.add(currentCell);
 		
@@ -428,44 +430,181 @@ public class Main {
 			openList.remove(q);
 			
 			//step c=> generate q's 4(at most) successors and set their parents to q
-			Cell s1 = q.getUp();
+			Cell s1 = q.getUp().clone();
 			if(s1 != null) {
 				s1.parent = q;
 				//step d.i=>
 				s1.g = q.g + 1;
 				s1.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
 				if(s1 == goal) {
+					destination = s1;
 					break;
 				}
+				//step d.ii=>
 				if(openList.contains(s1)) {
+					boolean check = false;
 					for(Cell c:openList) {
-						if(c == s1) return;
+						if(c.x == s1.x && c.y == s1.y) {
+							if(c.g+c.h < s1.g+s1.h) {
+								check = true;
+								break;
+							}
+						};
+					}
+					//step d.iii=>
+					if(!check) {
+						for(Cell c:closeList) {
+							if(c.x == s1.x && c.y == s1.y) {
+								if(c.g+c.h < s1.g+s1.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s1);
+						}
 					}
 				}
 			}
-			Cell s2 = q.getLeft();
+			
+			Cell s2 = q.getLeft().clone();
 			if(s2 != null) {
 				s2.parent = q;
+				//step d.i=>
+				s2.g = q.g + 1;
+				s2.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+				if(s2 == goal) {
+					destination = s2;
+					break;
+				}
+				//step d.ii=>
+				if(openList.contains(s2)) {
+					boolean check = false;
+					for(Cell c:openList) {
+						if(c.x == s2.x && c.y == s2.y) {
+							if(c.g+c.h < s2.g+s2.h) {
+								check = true;
+								break;
+							}
+						};
+					}
+					//step d.iii=>
+					if(!check) {
+						for(Cell c:closeList) {
+							if(c.x == s2.x && c.y == s2.y) {
+								if(c.g+c.h < s2.g+s2.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s2);
+						}
+					}
+				}
 			}
-			Cell s3 = q.getBottom();
+			
+			Cell s3 = q.getBottom().clone();
 			if(s3 != null) {
 				s3.parent = q;
+				//step d.i=>
+				s3.g = q.g + 1;
+				s3.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+				if(s3 == goal) {
+					destination = s3;
+					break;
+				}
+				//step d.ii=>
+				if(openList.contains(s3)) {
+					boolean check = false;
+					for(Cell c:openList) {
+						if(c.x == s3.x && c.y == s3.y) {
+							if(c.g+c.h < s3.g+s3.h) {
+								check = true;
+								break;
+							}
+						};
+					}
+					//step d.iii=>
+					if(!check) {
+						for(Cell c:closeList) {
+							if(c.x == s3.x && c.y == s3.y) {
+								if(c.g+c.h < s3.g+s3.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s3);
+						}
+					}
+				}
 			}
-			Cell s4 = q.getRight();
+			
+			Cell s4 = q.getRight().clone();
 			if(s4 != null) {
 				s4.parent = q;
+				//step d.i=>
+				s4.g = q.g + 1;
+				s4.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+				if(s4 == goal) {
+					destination = s4;
+					break;
+				}
+				//step d.ii=>
+				if(openList.contains(s4)) {
+					boolean check = false;
+					for(Cell c:openList) {
+						if(c.x == s4.x && c.y == s4.y) {
+							if(c.g+c.h < s4.g+s4.h) {
+								check = true;
+								break;
+							}
+						};
+					}
+					//step d.iii=>
+					if(!check) {
+						for(Cell c:closeList) {
+							if(c.x == s4.x && c.y == s4.y) {
+								if(c.g+c.h < s4.g+s4.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s4);
+						}
+					}
+				}
 			}
 			
 			//step e=> push q on the closed list
 			closeList.add(q);
 			
-			
-			
 		}
 		
 		
-		//TODO once we find the shortest path we can use moveToCell(Cell cell) function along the path
+		//add the path from destination to source
+		Stack<Cell> stack = new Stack<>();
+		Cell dest = destination.clone();
+		dest.parent = destination.parent;
+		stack.push(dest);
+		while(!(Main.x == destination.x && Main.y == destination.y)) {
+			destination = destination.parent;
+			Cell copyCell = destination.clone();
+			copyCell.parent = destination.parent;
+			stack.push(copyCell);
+		}
 		
+		//once we find the shortest path, we can use moveToCell(Cell cell) function along the path
+		while(!stack.isEmpty()) {
+			Cell cur = stack.pop();
+			Main.moveToCell(Main.getCell(cur.x, cur.y));
+		}
 		
 		
 	}

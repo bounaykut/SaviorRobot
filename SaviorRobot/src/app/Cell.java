@@ -24,6 +24,18 @@ public Cell() {
 	
 }
 
+public Cell clone() {
+	
+	Cell result = new Cell();
+	result.x = this.x;
+	result.y = this.y;
+	result.up = this.up;
+	result.left = this.left;
+	result.bottom = this.bottom;
+	result.right = this.right;
+	
+	return result;
+}
 
 
 public int getX() {
