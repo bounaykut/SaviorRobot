@@ -423,6 +423,7 @@ public class Main {
 			for(Cell c:openList) {
 				if(c.g+c.h < min) {
 					q = c;
+					min = c.g+c.h;
 				}
 			}
 			
@@ -430,19 +431,20 @@ public class Main {
 			openList.remove(q);
 			
 			//step c=> generate q's 4(at most) successors and set their parents to q
-			Cell s1 = q.getUp().clone();
+			Cell s1 = q.getUp();
 			if(s1 != null) {
+				s1 = q.getUp().clone();
 				s1.parent = q;
 				//step d.i=>
 				s1.g = q.g + 1;
 				s1.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s1 == goal) {
+				if(s1.x == goal.x && s1.y == goal.y) {
 					destination = s1;
 					break;
 				}
 				//step d.ii=>
+				boolean check = false;
 				if(openList.contains(s1)) {
-					boolean check = false;
 					for(Cell c:openList) {
 						if(c.x == s1.x && c.y == s1.y) {
 							if(c.g+c.h < s1.g+s1.h) {
@@ -451,36 +453,37 @@ public class Main {
 							}
 						};
 					}
-					//step d.iii=>
+				}
+				//step d.iii=>
+				if(!check) {
+					for(Cell c:closeList) {
+						if(c.x == s1.x && c.y == s1.y) {
+							if(c.g+c.h < s1.g+s1.h) {
+								check = true;
+								break;
+							}
+						};
+					}
 					if(!check) {
-						for(Cell c:closeList) {
-							if(c.x == s1.x && c.y == s1.y) {
-								if(c.g+c.h < s1.g+s1.h) {
-									check = true;
-									break;
-								}
-							};
-						}
-						if(!check) {
-							openList.add(s1);
-						}
+						openList.add(s1);
 					}
 				}
 			}
 			
-			Cell s2 = q.getLeft().clone();
+			Cell s2 = q.getLeft();
 			if(s2 != null) {
+				s2 = q.getLeft().clone();
 				s2.parent = q;
 				//step d.i=>
 				s2.g = q.g + 1;
 				s2.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s2 == goal) {
+				if(s2.x == goal.x && s2.y == goal.y) {
 					destination = s2;
 					break;
 				}
 				//step d.ii=>
+				boolean check = false;
 				if(openList.contains(s2)) {
-					boolean check = false;
 					for(Cell c:openList) {
 						if(c.x == s2.x && c.y == s2.y) {
 							if(c.g+c.h < s2.g+s2.h) {
@@ -489,36 +492,37 @@ public class Main {
 							}
 						};
 					}
-					//step d.iii=>
+				}
+				//step d.iii=>
+				if(!check) {
+					for(Cell c:closeList) {
+						if(c.x == s2.x && c.y == s2.y) {
+							if(c.g+c.h < s2.g+s2.h) {
+								check = true;
+								break;
+							}
+						};
+					}
 					if(!check) {
-						for(Cell c:closeList) {
-							if(c.x == s2.x && c.y == s2.y) {
-								if(c.g+c.h < s2.g+s2.h) {
-									check = true;
-									break;
-								}
-							};
-						}
-						if(!check) {
-							openList.add(s2);
-						}
+						openList.add(s2);
 					}
 				}
 			}
 			
-			Cell s3 = q.getBottom().clone();
+			Cell s3 = q.getBottom();
 			if(s3 != null) {
+				s3 = q.getBottom().clone();
 				s3.parent = q;
 				//step d.i=>
 				s3.g = q.g + 1;
 				s3.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s3 == goal) {
+				if(s3.x == goal.x && s3.y == goal.y) {
 					destination = s3;
 					break;
 				}
 				//step d.ii=>
+				boolean check = false;
 				if(openList.contains(s3)) {
-					boolean check = false;
 					for(Cell c:openList) {
 						if(c.x == s3.x && c.y == s3.y) {
 							if(c.g+c.h < s3.g+s3.h) {
@@ -527,36 +531,37 @@ public class Main {
 							}
 						};
 					}
-					//step d.iii=>
+				}
+				//step d.iii=>
+				if(!check) {
+					for(Cell c:closeList) {
+						if(c.x == s3.x && c.y == s3.y) {
+							if(c.g+c.h < s3.g+s3.h) {
+								check = true;
+								break;
+							}
+						};
+					}
 					if(!check) {
-						for(Cell c:closeList) {
-							if(c.x == s3.x && c.y == s3.y) {
-								if(c.g+c.h < s3.g+s3.h) {
-									check = true;
-									break;
-								}
-							};
-						}
-						if(!check) {
-							openList.add(s3);
-						}
+						openList.add(s3);
 					}
 				}
 			}
 			
-			Cell s4 = q.getRight().clone();
+			Cell s4 = q.getRight();
 			if(s4 != null) {
+				s4 = q.getRight().clone();
 				s4.parent = q;
 				//step d.i=>
 				s4.g = q.g + 1;
 				s4.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s4 == goal) {
+				if(s4.x == goal.x && s4.y == goal.y) {
 					destination = s4;
 					break;
 				}
 				//step d.ii=>
+				boolean check = false;
 				if(openList.contains(s4)) {
-					boolean check = false;
 					for(Cell c:openList) {
 						if(c.x == s4.x && c.y == s4.y) {
 							if(c.g+c.h < s4.g+s4.h) {
@@ -565,19 +570,19 @@ public class Main {
 							}
 						};
 					}
-					//step d.iii=>
+				}
+				//step d.iii=>
+				if(!check) {
+					for(Cell c:closeList) {
+						if(c.x == s4.x && c.y == s4.y) {
+							if(c.g+c.h < s4.g+s4.h) {
+								check = true;
+								break;
+							}
+						};
+					}
 					if(!check) {
-						for(Cell c:closeList) {
-							if(c.x == s4.x && c.y == s4.y) {
-								if(c.g+c.h < s4.g+s4.h) {
-									check = true;
-									break;
-								}
-							};
-						}
-						if(!check) {
-							openList.add(s4);
-						}
+						openList.add(s4);
 					}
 				}
 			}
