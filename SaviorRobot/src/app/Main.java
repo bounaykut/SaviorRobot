@@ -614,16 +614,6 @@ public class Main {
 		
 	}
 	
-	//return if prince location is already in the map or not
-	public static boolean isPrinceLocated() {
-		
-		for(Cell c:Main.cells) {
-			if(c.getColor() == Main.Color.GREEN) 
-				return true;
-		}
-		
-		return false;
-	}
 	
 	public static void serializeMap() {
 		try {
