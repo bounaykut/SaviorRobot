@@ -1,6 +1,5 @@
 package app;
 import java.io.File;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,7 +8,6 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.ListIterator;
 import java.util.Stack;
 
 import lejos.hardware.BrickFinder;
@@ -28,12 +26,7 @@ import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
 import lejos.utility.Delay;
-import localization.KillGiant;
-import localization.Localize;
-import localization.SavePrince;
-import localization.TakeWeapon;
-import mapping.MoveTo;
-import mapping.NeighborCheck;
+
 
 public class Main {
 
@@ -54,12 +47,14 @@ public class Main {
 	public static Cell previousCell = null;
 	
 	//mapping action controls
-	public static boolean action = true;
 	public static boolean mapDone = false;
 	public static boolean isSafe = false;
 	
 	//if current cell is a black cell or not
 	public static boolean isBlack = false;
+	
+	//first mapping on execution
+	public static boolean firstPart = true;
 	
 	//total black cell that is discovered
 	public static int blackCellCount = 0;
@@ -79,15 +74,9 @@ public class Main {
 	//sample values taken by sensors' sample provider
 	public static float[] sample1,sample2;
 	
-	//arbitrators for mapping and localization
-	public static Arbitrator mappingArbitrator, localizationArbitrator;
-	
-	
-	//localization behavior controls
-	public static boolean action2, weapon, giant, prince = false;
 	
 	//ultrasonic sensor motor
-	public static RegulatedMotor sensorMotor;
+	public static RegulatedMotor sensorMotor, armMotor;
 	
 	//robot body(brick)
 	public static EV3 ev3 = (EV3)BrickFinder.getDefault();
@@ -101,10 +90,11 @@ public class Main {
 		//differential robot initiation
 		RegulatedMotor leftMotor;
 		RegulatedMotor rightMotor;
-		sensorMotor = new EV3MediumRegulatedMotor(MotorPort.D);
+		sensorMotor = new EV3MediumRegulatedMotor(MotorPort.A);
+		
+		armMotor = new EV3MediumRegulatedMotor(MotorPort.D);
 		
 		
-    	
     	float leftDiam = 5.55f;
     	float rightDiam = 5.55f;
     	float trackWidth = 12.5f;
@@ -118,23 +108,29 @@ public class Main {
     	robot = new DifferentialPilot(leftDiam,rightDiam,trackWidth,leftMotor,rightMotor,reverse);
 		
     	
-    	robot.setLinearSpeed(10);
+    	robot.setLinearSpeed(5);
     	robot.setAngularSpeed(40);
+    	//82
+    	//robot.travel(33);
+    	//armMotor.rotate(60);
+    	//sensorMotor.rotate(-90);
+    	
     	
     	
     	//sensors' initiation
-    	
-    	colorSensor = new EV3ColorSensor(SensorPort.S1);
+        colorSensor = new EV3ColorSensor(SensorPort.S4);
 		sp1 = colorSensor.getColorIDMode();
 		sample1 = new float[sp1.sampleSize()];
 		
-		ultrasonicSensor = new EV3UltrasonicSensor(SensorPort.S4);
+		ultrasonicSensor = new EV3UltrasonicSensor(SensorPort.S1);
 	    sp2 = ultrasonicSensor.getDistanceMode();
 	    sample2 = new float[sp2.sampleSize()];
 	    
+	    
+	    
 		
 	    //server socket initiation
-	    socket = new ServerSocket(1235);
+	    socket = new ServerSocket(1234);
 	    Main.graphicsLCD.clear();
 	    Main.graphicsLCD.drawString("WhereAMI", Main.graphicsLCD.getWidth()/2, 0, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
 	    Main.graphicsLCD.drawString("Waiting", Main.graphicsLCD.getWidth()/2, 20, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
@@ -160,25 +156,17 @@ public class Main {
 			
 			//mapping task
 			if(button == Button.ID_UP) {
-				NeighborCheck nCheck = new NeighborCheck();
-				MoveTo moveTo = new MoveTo();
+				mapping.Util.neighborCheck();
 				
-				Behavior[] behaviorList = {moveTo,nCheck};
-				mappingArbitrator = new Arbitrator(behaviorList);
-				mappingArbitrator.go();
-				
-				Main.serializeMap();
 			}
 			//localization task
 			else if(button == Button.ID_DOWN) {
-				Localize localize = new Localize();
-				TakeWeapon takeWeapon = new TakeWeapon();
-				KillGiant killGiant = new KillGiant();
-				SavePrince savePrince = new SavePrince();
-				
-				Behavior[] behaviorList = {savePrince,killGiant,takeWeapon,localize};
-				localizationArbitrator = new Arbitrator(behaviorList);
-				localizationArbitrator.go();
+				localization.Util.localize();
+				//localization.Util.takeWeapon();
+			}
+			else if(button == Button.ID_RIGHT) {
+				//localization.Util.localize();
+				localization.Util.takeWeapon();
 			}
 			//idle task
 			else if(button == Button.ID_ENTER) {
@@ -193,41 +181,25 @@ public class Main {
 					degree = 0;
 					isBlack = false;
 					previousCell = null;
-					action2 = false;
-					weapon = false;
-					giant = false;
-					prince = false;
 					
-					Localize localize = new Localize();
-					TakeWeapon takeWeapon = new TakeWeapon();
-					KillGiant killGiant = new KillGiant();
-					SavePrince savePrince = new SavePrince();
-					
-					Behavior[] behaviorList = {savePrince,killGiant,takeWeapon,localize};
-					Arbitrator arbitrator = new Arbitrator(behaviorList);
-					arbitrator.go();
+					localization.Util.localize();
 				}else {
 					//reset mapping
 					cells.clear();
 					previousCell = null;
-					action = true;
 					mapDone = false;
 					isBlack = false;
 					blackCellCount = 0;
 					x = 0;
 					y = 0;
 					degree = 0;
+					isSafe = false;
 					
-					NeighborCheck nCheck = new NeighborCheck();
-					MoveTo moveTo = new MoveTo();
-					
-					Behavior[] behaviorList = {moveTo,nCheck};
-					Arbitrator arbitrator = new Arbitrator(behaviorList);
-					arbitrator.go();
+					mapping.Util.neighborCheck();
 				}
 			}
 		}
-					
+			
 	}
 	
 	//get the current cell by reference
@@ -289,11 +261,11 @@ public class Main {
 			}
 		}
 		
-		start.addAll(start.size(), end);
+		end.addAll(end.size(), start);
 		
 		float temp[] = new float[4];
 		for(int i=0;i<array.length;i++) {
-			temp[i] = start.get(i);
+			temp[i] = end.get(i);
 		}
 		
 		
@@ -304,7 +276,7 @@ public class Main {
 	public static boolean equals(float[] arr1, float[] arr2) {
 		
 		for(int i=0;i<4;i++) {
-			if(Math.abs(arr1[i]-arr2[i]) >= 0.13) {
+			if(Math.abs(arr1[i]-arr2[i]) >= 0.25) {
 				return false;
 			}
 		}
@@ -322,18 +294,26 @@ public class Main {
 		ArrayList<Cell> list = new ArrayList<>();
 		int currentWallCount = 0;
 		float currentDist[] = new float[4];
+		Delay.msDelay(1000);
 		currentDist[0] = Main.getDistance();
+		if(currentDist[0] < 0.27) currentWallCount++;
 		for(int i=1;i<4;i++) {
-			Main.sensorMotor.rotate(-90);
+			Main.sensorMotor.rotate(90);
 			currentDist[i] = Main.getDistance();
-			if(currentDist[i] < 0.21) currentWallCount++;
+			if(currentDist[i] < 0.27) currentWallCount++;
 		}
-		Main.sensorMotor.rotate(270);
+		Main.sensorMotor.rotate(-270);
 		
 		//locate yourself(find a unique cell to locate your coordinate) 
 		for(Cell cell:Main.cells) {
 			int cellWallCount = cell.getWallCount();
+			
+			
 			if(cellWallCount == currentWallCount ) {
+				Main.graphicsLCD.clear();
+				Main.graphicsLCD.drawString(currentWallCount+ " currentwall ", Main.graphicsLCD.getWidth()/2, 0, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
+				Main.graphicsLCD.refresh();
+				Delay.msDelay(2000);
 				float dist0[] = cell.getDistance();
 				float dist1[] = Main.shift(dist0, 1);
 				float dist2[] = Main.shift(dist1, 1);
@@ -342,21 +322,36 @@ public class Main {
 				if(Main.equals(currentDist, dist0)) {
 					degreeList.add(0);
 					list.add(cell);
+					
+					
 				}
 				else if(Main.equals(currentDist, dist1)) {
-					degreeList.add(90);
+					degreeList.add(240);
 					list.add(cell);
+					
+					
 				}
 				else if(Main.equals(currentDist, dist2)) {
-					degreeList.add(180);
+					degreeList.add(160);
 					list.add(cell);
+					
+					
 				}
 				else if(Main.equals(currentDist, dist3)) {
-					degreeList.add(270);
+					degreeList.add(80);
 					list.add(cell);
+					
+					
 				}
+				
 			}
+			
 		}
+		
+		Main.graphicsLCD.clear();
+		Main.graphicsLCD.drawString("candidate size "+list.size(), Main.graphicsLCD.getWidth()/2, 0, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
+		Main.graphicsLCD.refresh();
+		Delay.msDelay(2000);
 
 		return list;
 	}
@@ -367,32 +362,63 @@ public class Main {
 		
 		if(Main.x != cell.getX()) {
 			
-			if(Main.x > cell.getUp().getX()) {
-				Main.robot.rotate(90-Main.degree);
+			if(Main.x > cell.getX()) {
+				// 80 - Main.degree kadar don
+				if(80-Main.degree == -240) {
+					Main.robot.rotate(80);
+				}
+				else{
+					Main.robot.rotate(80-Main.degree);
+				}
+				/*Main.graphicsLCD.clear();
+				Main.graphicsLCD.drawString("1 "+Main.degree, Main.graphicsLCD.getWidth()/2, Main.graphicsLCD.getHeight()/2, GraphicsLCD.HCENTER|GraphicsLCD.VCENTER);
+				//33 cm duz git*/
 				Main.robot.travel(33);
-				
-				Main.degree = 90;
+
+				Main.degree = 80;
 				Main.x--;
 			}else {
-				Main.robot.rotate(270-Main.degree);
+				//240 - Main.Degree kadar don
+				if(240-Main.degree == 240) {
+					Main.robot.rotate(-80);
+				}
+				else {
+					Main.robot.rotate(240-Main.degree);
+				}
+				/*Main.graphicsLCD.clear();
+				Main.graphicsLCD.drawString("2 "+Main.degree, Main.graphicsLCD.getWidth()/2, Main.graphicsLCD.getHeight()/2, GraphicsLCD.HCENTER|GraphicsLCD.VCENTER);
+				//33 cm duz git*/
 				Main.robot.travel(33);
-				
-				Main.degree = 270;
+
+				Main.degree = 240;
 				Main.x++;
 			}
 			
 		}else {
 			
 			if(Main.y > cell.getY()) {
-				Main.robot.rotate(180-Main.degree);
+				// 160 - Main.degree kadar don
+				Main.robot.rotate(160-Main.degree);
+				/*Main.graphicsLCD.clear();
+				Main.graphicsLCD.drawString("3 "+Main.degree, Main.graphicsLCD.getWidth()/2, Main.graphicsLCD.getHeight()/2, GraphicsLCD.HCENTER|GraphicsLCD.VCENTER);
+				//33 cm duz git*/
 				Main.robot.travel(33);
-				
-				Main.degree = 180;
+
+				Main.degree = 160;
 				Main.y--;
 			}else {
-				Main.robot.rotate(360-Main.degree);
+				//320 - Main.Degree kadar don
+				if(320-Main.degree == 240) {
+					Main.robot.rotate(-80);
+				}
+				else if(320-Main.degree != 320) {
+					Main.robot.rotate(320-Main.degree);
+				}
+				/*Main.graphicsLCD.clear();
+				Main.graphicsLCD.drawString("4 "+Main.degree, Main.graphicsLCD.getWidth()/2, Main.graphicsLCD.getHeight()/2, GraphicsLCD.HCENTER|GraphicsLCD.VCENTER);
+				//33 cm duz git*/
 				Main.robot.travel(33);
-				
+
 				Main.degree = 0;
 				Main.y++;
 			}
@@ -404,193 +430,195 @@ public class Main {
 	
 	//move to specified cell through the shortest path
 	public static void moveShortest(Cell goal) {
-		
-		Cell destination = null;
-		
-		ArrayList<Cell> openList = new ArrayList<>();
-		ArrayList<Cell> closeList = new ArrayList<>();
-		
-		Cell currentCell = Main.getCell(Main.x, Main.y).clone();
-		
-		openList.add(currentCell);
-		
-		while(!openList.isEmpty()) {
 			
-			Cell q = null;
+			Cell destination = null;
 			
-			//step a=> find the node with the least f on the open list, call it "q"
-			int min = 100000;
-			for(Cell c:openList) {
-				if(c.g+c.h < min) {
-					q = c;
-					min = c.g+c.h;
-				}
-			}
+			ArrayList<Cell> openList = new ArrayList<>();
+			ArrayList<Cell> closeList = new ArrayList<>();
 			
-			//step b=> pop q off the open list
-			openList.remove(q);
+			Cell currentCell = Main.getCell(Main.x, Main.y).clone();
 			
-			//step c=> generate q's 4(at most) successors and set their parents to q
-			Cell s1 = q.getUp();
-			if(s1 != null) {
-				s1 = q.getUp().clone();
-				s1.parent = q;
-				//step d.i=>
-				s1.g = q.g + 1;
-				s1.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s1.x == goal.x && s1.y == goal.y) {
-					destination = s1;
-					break;
-				}
-				//step d.ii=>
-				boolean check = false;
-				if(openList.contains(s1)) {
-					for(Cell c:openList) {
-						if(c.x == s1.x && c.y == s1.y) {
-							if(c.g+c.h < s1.g+s1.h) {
-								check = true;
-								break;
-							}
-						};
+			openList.add(currentCell);
+			
+			while(!openList.isEmpty()) {
+				
+				Cell q = null;
+				
+				//step a=> find the node with the least f on the open list, call it "q"
+				int min = 100000;
+				for(Cell c:openList) {
+					if(c.g+c.h < min) {
+						q = c;
+						min = c.g+c.h;
+						//System.out.println(q.x + " and "+q.y + " score:"+q.g+q.h);
 					}
 				}
-				//step d.iii=>
-				if(!check) {
-					for(Cell c:closeList) {
-						if(c.x == s1.x && c.y == s1.y) {
-							if(c.g+c.h < s1.g+s1.h) {
-								check = true;
-								break;
-							}
-						};
+				
+				//step b=> pop q off the open list
+				openList.remove(q);
+				
+				//step c=> generate q's 4(at most) successors and set their parents to q
+				Cell s1 = q.getUp();
+				if(s1 != null) {
+					s1 = q.getUp().clone();
+					s1.parent = q;
+					//step d.i=>
+					s1.g = q.g + 1;
+					s1.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+					if(s1.x == goal.x && s1.y == goal.y) {
+						destination = s1;
+						break;
 					}
+					//step d.ii=>
+					boolean check = false;
+					if(openList.contains(s1)) {
+						for(Cell c:openList) {
+							if(c.x == s1.x && c.y == s1.y) {
+								if(c.g+c.h < s1.g+s1.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+					}
+					//step d.iii=>
 					if(!check) {
-						openList.add(s1);
+						for(Cell c:closeList) {
+							if(c.x == s1.x && c.y == s1.y) {
+								if(c.g+c.h < s1.g+s1.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s1);
+						}
 					}
 				}
-			}
-			
-			Cell s2 = q.getLeft();
-			if(s2 != null) {
-				s2 = q.getLeft().clone();
-				s2.parent = q;
-				//step d.i=>
-				s2.g = q.g + 1;
-				s2.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s2.x == goal.x && s2.y == goal.y) {
-					destination = s2;
-					break;
-				}
-				//step d.ii=>
-				boolean check = false;
-				if(openList.contains(s2)) {
-					for(Cell c:openList) {
-						if(c.x == s2.x && c.y == s2.y) {
-							if(c.g+c.h < s2.g+s2.h) {
-								check = true;
-								break;
-							}
-						};
+				
+				Cell s2 = q.getLeft();
+				if(s2 != null) {
+					s2 = q.getLeft().clone();
+					s2.parent = q;
+					//step d.i=>
+					s2.g = q.g + 1;
+					s2.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+					if(s2.x == goal.x && s2.y == goal.y) {
+						destination = s2;
+						break;
 					}
-				}
-				//step d.iii=>
-				if(!check) {
-					for(Cell c:closeList) {
-						if(c.x == s2.x && c.y == s2.y) {
-							if(c.g+c.h < s2.g+s2.h) {
-								check = true;
-								break;
-							}
-						};
+					//step d.ii=>
+					boolean check = false;
+					if(openList.contains(s2)) {
+						for(Cell c:openList) {
+							if(c.x == s2.x && c.y == s2.y) {
+								if(c.g+c.h < s2.g+s2.h) {
+									check = true;
+									break;
+								}
+							};
+						}
 					}
+					//step d.iii=>
 					if(!check) {
-						openList.add(s2);
+						for(Cell c:closeList) {
+							if(c.x == s2.x && c.y == s2.y) {
+								if(c.g+c.h < s2.g+s2.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s2);
+						}
 					}
 				}
-			}
-			
-			Cell s3 = q.getBottom();
-			if(s3 != null) {
-				s3 = q.getBottom().clone();
-				s3.parent = q;
-				//step d.i=>
-				s3.g = q.g + 1;
-				s3.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s3.x == goal.x && s3.y == goal.y) {
-					destination = s3;
-					break;
-				}
-				//step d.ii=>
-				boolean check = false;
-				if(openList.contains(s3)) {
-					for(Cell c:openList) {
-						if(c.x == s3.x && c.y == s3.y) {
-							if(c.g+c.h < s3.g+s3.h) {
-								check = true;
-								break;
-							}
-						};
+				
+				Cell s3 = q.getBottom();
+				if(s3 != null) {
+					s3 = q.getBottom().clone();
+					s3.parent = q;
+					//step d.i=>
+					s3.g = q.g + 1;
+					s3.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+					if(s3.x == goal.x && s3.y == goal.y) {
+						destination = s3;
+						break;
 					}
-				}
-				//step d.iii=>
-				if(!check) {
-					for(Cell c:closeList) {
-						if(c.x == s3.x && c.y == s3.y) {
-							if(c.g+c.h < s3.g+s3.h) {
-								check = true;
-								break;
-							}
-						};
+					//step d.ii=>
+					boolean check = false;
+					if(openList.contains(s3)) {
+						for(Cell c:openList) {
+							if(c.x == s3.x && c.y == s3.y) {
+								if(c.g+c.h < s3.g+s3.h) {
+									check = true;
+									break;
+								}
+							};
+						}
 					}
+					//step d.iii=>
 					if(!check) {
-						openList.add(s3);
+						for(Cell c:closeList) {
+							if(c.x == s3.x && c.y == s3.y) {
+								if(c.g+c.h < s3.g+s3.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s3);
+						}
 					}
 				}
-			}
-			
-			Cell s4 = q.getRight();
-			if(s4 != null) {
-				s4 = q.getRight().clone();
-				s4.parent = q;
-				//step d.i=>
-				s4.g = q.g + 1;
-				s4.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
-				if(s4.x == goal.x && s4.y == goal.y) {
-					destination = s4;
-					break;
-				}
-				//step d.ii=>
-				boolean check = false;
-				if(openList.contains(s4)) {
-					for(Cell c:openList) {
-						if(c.x == s4.x && c.y == s4.y) {
-							if(c.g+c.h < s4.g+s4.h) {
-								check = true;
-								break;
-							}
-						};
+				
+				Cell s4 = q.getRight();
+				if(s4 != null) {
+					s4 = q.getRight().clone();
+					s4.parent = q;
+					//step d.i=>
+					s4.g = q.g + 1;
+					s4.h = Math.abs(q.getX() - goal.getX()) + Math.abs(q.getY() - goal.getY());
+					if(s4.x == goal.x && s4.y == goal.y) {
+						destination = s4;
+						break;
 					}
-				}
-				//step d.iii=>
-				if(!check) {
-					for(Cell c:closeList) {
-						if(c.x == s4.x && c.y == s4.y) {
-							if(c.g+c.h < s4.g+s4.h) {
-								check = true;
-								break;
-							}
-						};
+					//step d.ii=>
+					boolean check = false;
+					if(openList.contains(s4)) {
+						for(Cell c:openList) {
+							if(c.x == s4.x && c.y == s4.y) {
+								if(c.g+c.h < s4.g+s4.h) {
+									check = true;
+									break;
+								}
+							};
+						}
 					}
+					//step d.iii=>
 					if(!check) {
-						openList.add(s4);
+						for(Cell c:closeList) {
+							if(c.x == s4.x && c.y == s4.y) {
+								if(c.g+c.h < s4.g+s4.h) {
+									check = true;
+									break;
+								}
+							};
+						}
+						if(!check) {
+							openList.add(s4);
+						}
 					}
 				}
+				
+				//step e=> push q on the closed list
+				closeList.add(q);
+				System.out.println("end");
+				
 			}
-			
-			//step e=> push q on the closed list
-			closeList.add(q);
-			
-		}
 		
 		
 		//add the path from destination to source
@@ -606,9 +634,11 @@ public class Main {
 		}
 		
 		//once we find the shortest path, we can use moveToCell(Cell cell) function along the path
+		stack.pop();
 		while(!stack.isEmpty()) {
 			Cell cur = stack.pop();
 			Main.moveToCell(Main.getCell(cur.x, cur.y));
+			System.out.println(cur.getX() + " and "+ cur.getY()+  " and " + Main.degree);
 		}
 		
 		
@@ -617,7 +647,7 @@ public class Main {
 	
 	public static void serializeMap() {
 		try {
-	         FileOutputStream fileOut = new FileOutputStream("map.ser");
+	         FileOutputStream fileOut = new FileOutputStream("map1.ser");
 	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
 	         out.writeObject(Main.cells);
 	         out.close();
@@ -630,9 +660,9 @@ public class Main {
 	public static boolean deserializeMap() {
 		try {
 			
-			File f = new File("map.ser");
+			File f = new File("map1.ser");
 			if(f.exists()) {
-				FileInputStream fileIn = new FileInputStream("map.ser");
+				FileInputStream fileIn = new FileInputStream("map1.ser");
 		        ObjectInputStream in = new ObjectInputStream(fileIn);
 		        Main.cells = (ArrayList<Cell>) in.readObject();
 		        in.close();
